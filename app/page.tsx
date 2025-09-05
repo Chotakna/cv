@@ -1,9 +1,10 @@
 "use client"
-
-import { useEffect, useState } from "react"
+//new one
+import { useEffect, useState, useRef } from "react"
 
 export default function Portfolio() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const animatedTextRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
     // Smooth scrolling for navigation links
@@ -11,7 +12,10 @@ export default function Portfolio() {
     navLinks.forEach((link) => {
       link.addEventListener("click", function (e) {
         e.preventDefault()
-        const targetId = this.getAttribute("href")
+        const target = e.currentTarget as HTMLAnchorElement
+        const targetId = target.getAttribute("href")
+        if (!targetId) return
+        
         const targetSection = document.querySelector(targetId)
 
         if (targetSection) {
@@ -21,7 +25,7 @@ export default function Portfolio() {
 
           // Update active nav link
           navLinks.forEach((l) => l.classList.remove("active"))
-          this.classList.add("active")
+          target.classList.add("active")
 
           // Close mobile menu after clicking
           setIsMenuOpen(false)
@@ -62,7 +66,7 @@ export default function Portfolio() {
 
       navLinks.forEach((link) => {
         link.classList.remove("active")
-        if (link.getAttribute("href") === "#" + current) {
+        if (link.getAttribute("href") === `#${current}`) {
           link.classList.add("active")
         }
       })
@@ -72,13 +76,15 @@ export default function Portfolio() {
 
     // Add interactive effects for glass cards
     document.querySelectorAll(".glass-card").forEach((card) => {
-      card.addEventListener("mouseenter", function () {
-        this.style.transform = "translateY(-10px) scale(1.02)"
-        this.style.transition = "transform 0.3s ease"
+      card.addEventListener("mouseenter", function (e) {
+        const target = e.currentTarget as HTMLElement
+        target.style.transform = "translateY(-10px) scale(1.02)"
+        target.style.transition = "transform 0.3s ease"
       })
 
-      card.addEventListener("mouseleave", function () {
-        this.style.transform = "translateY(0) scale(1)"
+      card.addEventListener("mouseleave", function (e) {
+        const target = e.currentTarget as HTMLElement
+        target.style.transform = "translateY(0) scale(1)"
       })
     })
 
@@ -91,8 +97,10 @@ export default function Portfolio() {
             const width = entry.target.getAttribute("data-width")
             entry.target.style.width = "0"
             setTimeout(() => {
-              entry.target.style.transition = "width 1s ease"
-              entry.target.style.width = width || "0%"
+              if (entry.target instanceof HTMLElement) {
+                entry.target.style.transition = "width 1s ease"
+                entry.target.style.width = width || "0%"
+              }
             }, 200)
           }
         })
@@ -110,7 +118,7 @@ export default function Portfolio() {
       element.textContent = "" // Clear before starting
       function type() {
         if (i < text.length) {
-          element.textContent = text.substring(0, i + 1) // Use substring instead of +=
+          element.textContent = text.substring(0, i + 1)
           i++
           setTimeout(type, speed)
         } else if (typeof callback === "function") {
@@ -132,14 +140,17 @@ export default function Portfolio() {
       loop()
     }
 
-    const animatedText = document.querySelector(".animated-text") as HTMLElement
-    if (animatedText) {
-      loopTypeWriter(animatedText, "Data scientist + web developer", 80, 1500)
+    // Start typing animation when component mounts
+    if (animatedTextRef.current) {
+      loopTypeWriter(animatedTextRef.current, "Data scientist + web developer", 80, 1500)
     }
 
     // Cleanup
     return () => {
       window.removeEventListener("scroll", handleScroll)
+      navLinks.forEach((link) => {
+        link.removeEventListener("click", () => {})
+      })
     }
   }, [])
 
@@ -180,7 +191,7 @@ export default function Portfolio() {
           <div className="hero-content">
             <div className="hero-text">
               <div className="animated-text-container">
-                <h1 className="animated-text"></h1>
+                <h1 className="animated-text" ref={animatedTextRef}></h1>
               </div>
               <p className="hero-description">
                 Transforming data into insights and ideas into digital experiences. I bridge the gap between complex
@@ -499,10 +510,10 @@ export default function Portfolio() {
             </div>
 
             <div className="glass-card fade-in">
-              <h3>Let's Collaborate</h3>
+              <h3>Let&apos;s Collaborate</h3>
               <p className="collaboration-text">
-                I'm always interested in discussing new opportunities, whether it's data analysis projects, frontend
-                development work, or educational initiatives. Let's connect and explore how we can work together to
+                I&apos;m always interested in discussing new opportunities, whether it&apos;s data analysis projects, frontend
+                development work, or educational initiatives. Let&apos;s connect and explore how we can work together to
                 create impactful solutions.
               </p>
               <div className="cta-buttons">
